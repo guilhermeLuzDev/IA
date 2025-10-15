@@ -1,3 +1,4 @@
+import io
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -10,7 +11,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 import warnings
-import io
 
 warnings.filterwarnings('ignore')
 plt.style.use('seaborn-v0_8-darkgrid')
