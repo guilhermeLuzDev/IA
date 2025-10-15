@@ -31,7 +31,6 @@ st.write(f"Dimensão do dataset: {df.shape[0]} registros e {df.shape[1]} colunas
 st.dataframe(df.head(), height=250)
 
 st.subheader("Informações do dataframe")
-
 st.markdown("**Resumo estatístico:**")
 st.dataframe(df.describe().T)
 
@@ -48,7 +47,7 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.markdown("**Distribuição de óbitos (DEATH_EVENT)**")
-    fig1, ax1 = plt.subplots(figsize=(6,4))
+    fig1, ax1 = plt.subplots(figsize=(4,3))
     sns.countplot(x='DEATH_EVENT', data=df, ax=ax1)
     ax1.set_title('Distribuição DEATH_EVENT (0 = vivo, 1 = óbito)')
     st.pyplot(fig1)
@@ -58,7 +57,7 @@ with col1:
 
 with col2:
     st.markdown("**Mapa de Correlação**")
-    fig2, ax2 = plt.subplots(figsize=(8,6))
+    fig2, ax2 = plt.subplots(figsize=(5,4))
     sns.heatmap(df.corr(), annot=True, fmt='.2f', cmap='coolwarm', ax=ax2)
     ax2.set_title('Correlação entre Variáveis')
     st.pyplot(fig2)
@@ -97,7 +96,7 @@ for name, model in models.items():
     with st.expander(f"{name} - Relatório de Classificação"):
         st.text(classification_report(y_test, y_pred))
         cm = confusion_matrix(y_test, y_pred)
-        fig_cm, ax_cm = plt.subplots()
+        fig_cm, ax_cm = plt.subplots(figsize=(3,3))
         sns.heatmap(cm, annot=True, fmt='d', ax=ax_cm)
         ax_cm.set_title(f'Matriz de Confusão - {name}')
         ax_cm.set_xlabel('Predito')
@@ -109,7 +108,7 @@ st.write("**Acurácia dos Modelos:**")
 st.dataframe(acc_df)
 
 st.subheader("Curvas ROC")
-fig_roc, ax_roc = plt.subplots(figsize=(7,5))
+fig_roc, ax_roc = plt.subplots(figsize=(5,4))
 for name, model in models.items():
     if hasattr(model, "predict_proba"):
         probs = model.predict_proba(X_test)[:,1]
@@ -132,7 +131,7 @@ st.subheader("Importância das Features - Random Forest")
 feat_imp = pd.Series(models['Random Forest'].feature_importances_, index=X.columns)
 feat_imp = feat_imp.sort_values(ascending=False)
 
-fig_feat, ax_feat = plt.subplots(figsize=(6,4))
+fig_feat, ax_feat = plt.subplots(figsize=(5,3))
 sns.barplot(x=feat_imp.values, y=feat_imp.index, ax=ax_feat)
 ax_feat.set_title("Top Features por importância (Random Forest)")
 st.pyplot(fig_feat)
