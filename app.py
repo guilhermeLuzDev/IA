@@ -20,7 +20,6 @@ st.set_page_config(page_title="Previsão Insuficiência Cardíaca", layout="wide
 st.title("Previsão de Óbito por Insuficiência Cardíaca")
 st.markdown("Projeto completo com análise, modelagem e avaliação de algoritmos ML.")
 
-# Sidebar com informações básicas do dataset e dados sumários
 with st.sidebar:
     st.header("Sobre o Dataset")
     st.markdown("""
@@ -34,13 +33,11 @@ with st.sidebar:
         info_str = buffer.getvalue()
         st.text(info_str)
 
-# Carregamento dos dados
 df = pd.read_csv('heart_failure_clinical_records_dataset.csv')
 st.subheader("Visualização dos Dados")
 st.write(f"Dimensão do dataset: {df.shape[0]} registros e {df.shape[1]} colunas")
 st.dataframe(df.head(), height=250)
 
-# Análise exploratória
 st.subheader("Análise Exploratória")
 
 col1, col2 = st.columns(2)
@@ -62,7 +59,6 @@ with col2:
     ax2.set_title('Correlação entre Variáveis')
     st.pyplot(fig2)
 
-# Pré-processamento
 st.subheader("Pré-processamento")
 X = df.drop('DEATH_EVENT', axis=1)
 y = df['DEATH_EVENT']
@@ -78,7 +74,6 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 st.write(f'Dados de treino: {X_train.shape} | Dados de teste: {X_test.shape}')
 
-# Treinamento dos modelos
 st.subheader("Treinamento e Resultados")
 
 models = {
@@ -105,14 +100,12 @@ for name, model in models.items():
         ax_cm.set_ylabel('Real')
         st.pyplot(fig_cm)
 
-# Mostrando accuracies
 acc_df = pd.DataFrame(results).T
 st.write("Acurácia dos Modelos:")
 st.dataframe(acc_df)
 
-# Curvas ROC
 st.subheader("Curvas ROC")
-fig_roc, ax_roc = plt.subplots()
+fig_roc, ax_roc = plt.subplots(figsize=(7,5))
 for name, model in models.items():
     if hasattr(model, "predict_proba"):
         probs = model.predict_proba(X_test)[:,1]
@@ -131,17 +124,15 @@ ax_roc.set_title("ROC Curves")
 ax_roc.legend()
 st.pyplot(fig_roc)
 
-# Importância de features para Random Forest
 st.subheader("Importância das Features - Random Forest")
 feat_imp = pd.Series(models['Random Forest'].feature_importances_, index=X.columns)
 feat_imp = feat_imp.sort_values(ascending=False)
 
-fig_feat, ax_feat = plt.subplots()
+fig_feat, ax_feat = plt.subplots(figsize=(6,4))
 sns.barplot(x=feat_imp.values, y=feat_imp.index, ax=ax_feat)
 ax_feat.set_title("Top Features por importância (Random Forest)")
 st.pyplot(fig_feat)
 
-# Validação cruzada e otimização
 st.subheader("Validação Cruzada e Otimização")
 
 rf = models['Random Forest']
