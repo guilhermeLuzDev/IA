@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""Heart_Disease_Prediction_Colab_Script_FINISHED.py
-
-Projetos para previsão de óbito por insuficiência cardíaca usando Streamlit
-"""
-
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -11,116 +5,116 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import (accuracy_score, confusion_matrix, classification_report,
-                             roc_curve, roc_auc_score, precision_score, recall_score, f1_score)
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_curve, roc_auc_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 import warnings
+import io
+
 warnings.filterwarnings('ignore')
 plt.style.use('seaborn-v0_8-darkgrid')
 
+st.set_page_config(page_title="Previsão Insuficiência Cardíaca", layout="wide")
+
 st.title("Previsão de Óbito por Insuficiência Cardíaca")
+st.markdown("Projeto completo com análise, modelagem e avaliação de algoritmos ML.")
 
-"""## 2. Carregamento do dataset"""
+# Sidebar com informações básicas do dataset e dados sumários
+with st.sidebar:
+    st.header("Sobre o Dataset")
+    st.markdown("""
+    - 299 registros clínicos  
+    - 12 variáveis clínicas + alvo  
+    - Objetivo: prever óbito (`DEATH_EVENT`)  
+    """)
+    if st.button("Mostrar informações do dataframe"):
+        buffer = io.StringIO()
+        df.info(buf=buffer)
+        info_str = buffer.getvalue()
+        st.text(info_str)
+
+# Carregamento dos dados
 df = pd.read_csv('heart_failure_clinical_records_dataset.csv')
-st.write('Formato:', df.shape)
-st.dataframe(df.head())
+st.subheader("Visualização dos Dados")
+st.write(f"Dimensão do dataset: {df.shape[0]} registros e {df.shape[1]} colunas")
+st.dataframe(df.head(), height=250)
 
-"""## 3. Análise exploratória (EDA)"""
+# Análise exploratória
+st.subheader("Análise Exploratória")
 
-# Captura saída do df.info()
-import io
-buffer = io.StringIO()
-df.info(buf=buffer)
-info_str = buffer.getvalue()
-st.text(info_str)
+col1, col2 = st.columns(2)
 
-st.write(df.describe().T)
-st.write('Valores nulos por coluna:')
-st.write(df.isnull().sum())
+with col1:
+    st.markdown("**Distribuição de DEATH_EVENT**")
+    fig1, ax1 = plt.subplots(figsize=(6,4))
+    sns.countplot(x='DEATH_EVENT', data=df, ax=ax1)
+    ax1.set_title('Distribuição de DEATH_EVENT (0 = vivo, 1 = óbito)')
+    st.pyplot(fig1)
 
-# Distribuição do alvo (DEATH_EVENT)
-plt.figure(figsize=(6,4))
-sns.countplot(x='DEATH_EVENT', data=df)
-plt.title('Distribuição de DEATH_EVENT (0 = vivo, 1 = óbito)')
-st.pyplot(plt.gcf())
-plt.clf()
+    st.markdown("**Valores Nulos por Coluna**")
+    st.write(df.isnull().sum())
 
-# Correlação e heatmap
-plt.figure(figsize=(12,10))
-corr = df.corr()
-sns.heatmap(corr, annot=True, fmt='.2f', cmap='coolwarm')
-plt.title('Mapa de Correlação')
-st.pyplot(plt.gcf())
-plt.clf()
+with col2:
+    st.markdown("**Mapa de Correlação**")
+    fig2, ax2 = plt.subplots(figsize=(8,6))
+    sns.heatmap(df.corr(), annot=True, fmt='.2f', cmap='coolwarm', ax=ax2)
+    ax2.set_title('Correlação entre Variáveis')
+    st.pyplot(fig2)
 
-"""## 4. Pré-processamento"""
-
-# Features e target
+# Pré-processamento
+st.subheader("Pré-processamento")
 X = df.drop('DEATH_EVENT', axis=1)
 y = df['DEATH_EVENT']
-st.write('X shape:', X.shape, 'y shape:', y.shape)
 
-# Normalização das features numéricas
+st.write(f'Conjunto de Features: {X.shape}')
+st.write(f'Conjunto Target: {y.shape}')
+
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# Divisão treino/teste
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42, stratify=y)
-st.write('Treino:', X_train.shape, 'Teste:', X_test.shape)
+X_train, X_test, y_train, y_test = train_test_split(
+    X_scaled, y, test_size=0.2, random_state=42, stratify=y)
 
-"""## 5. Treinamento — modelos base (benchmark)"""
+st.write(f'Dados de treino: {X_train.shape} | Dados de teste: {X_test.shape}')
 
-# Logistic Regression
-log = LogisticRegression(max_iter=1000)
-log.fit(X_train, y_train)
-y_pred_log = log.predict(X_test)
-acc_log = accuracy_score(y_test, y_pred_log)
+# Treinamento dos modelos
+st.subheader("Treinamento e Resultados")
 
-# KNN (k=5)
-knn = KNeighborsClassifier(n_neighbors=5)
-knn.fit(X_train, y_train)
-y_pred_knn = knn.predict(X_test)
-acc_knn = accuracy_score(y_test, y_pred_knn)
+models = {
+    'Logistic Regression': LogisticRegression(max_iter=1000),
+    'KNN (k=5)': KNeighborsClassifier(n_neighbors=5),
+    'Random Forest': RandomForestClassifier(n_estimators=100, random_state=42)
+}
 
-# Random Forest (base)
-rf = RandomForestClassifier(n_estimators=100, random_state=42)
-rf.fit(X_train, y_train)
-y_pred_rf = rf.predict(X_test)
-acc_rf = accuracy_score(y_test, y_pred_rf)
-
-st.write('Acurácia — Logistic Regression: {:.3f}'.format(acc_log))
-st.write('Acurácia — KNN: {:.3f}'.format(acc_knn))
-st.write('Acurácia — Random Forest: {:.3f}'.format(acc_rf))
-
-"""## 6. Avaliação detalhada e comparação"""
-
-models = {'Logistic Regression': log, 'KNN': knn, 'Random Forest': rf}
 results = {}
+
 for name, model in models.items():
+    model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     acc = accuracy_score(y_test, y_pred)
-    auc = roc_auc_score(y_test, model.predict_proba(X_test)[:,1]) if hasattr(model, 'predict_proba') else roc_auc_score(y_test, model.predict(X_test))
-    results[name] = {'accuracy': acc, 'roc_auc': auc}
-    st.write('---', name)
-    st.text(classification_report(y_test, y_pred))
-    cm = confusion_matrix(y_test, y_pred)
-    plt.figure()
-    sns.heatmap(cm, annot=True, fmt='d')
-    plt.title(f'Confusion Matrix — {name}')
-    plt.xlabel('Predito')
-    plt.ylabel('Real')
-    st.pyplot(plt.gcf())
-    plt.clf()
+    results[name] = {'accuracy': acc}
 
-results_df = pd.DataFrame(results).T
-st.dataframe(results_df)
+    with st.expander(f"{name} - Relatório de Classificação"):
+        st.text(classification_report(y_test, y_pred))
+        cm = confusion_matrix(y_test, y_pred)
+        fig_cm, ax_cm = plt.subplots()
+        sns.heatmap(cm, annot=True, fmt='d', ax=ax_cm)
+        ax_cm.set_title(f'Matriz de Confusão - {name}')
+        ax_cm.set_xlabel('Predito')
+        ax_cm.set_ylabel('Real')
+        st.pyplot(fig_cm)
+
+# Mostrando accuracies
+acc_df = pd.DataFrame(results).T
+st.write("Acurácia dos Modelos:")
+st.dataframe(acc_df)
 
 # Curvas ROC
-plt.figure(figsize=(8,6))
+st.subheader("Curvas ROC")
+fig_roc, ax_roc = plt.subplots()
 for name, model in models.items():
-    if hasattr(model, 'predict_proba'):
+    if hasattr(model, "predict_proba"):
         probs = model.predict_proba(X_test)[:,1]
     else:
         try:
@@ -129,42 +123,40 @@ for name, model in models.items():
             probs = model.predict(X_test)
     fpr, tpr, _ = roc_curve(y_test, probs)
     auc = roc_auc_score(y_test, probs)
-    plt.plot(fpr, tpr, label=f'{name} (AUC = {auc:.3f})')
-plt.plot([0,1],[0,1],'--', color='grey')
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('ROC Curves')
-plt.legend()
-st.pyplot(plt.gcf())
-plt.clf()
+    ax_roc.plot(fpr, tpr, label=f"{name} (AUC = {auc:.3f})")
+ax_roc.plot([0,1], [0,1], 'k--')
+ax_roc.set_xlabel("False Positive Rate")
+ax_roc.set_ylabel("True Positive Rate")
+ax_roc.set_title("ROC Curves")
+ax_roc.legend()
+st.pyplot(fig_roc)
 
-"""## 7. Importância de features (Random Forest)"""
-
-feat_imp = pd.Series(rf.feature_importances_, index=df.drop('DEATH_EVENT', axis=1).columns)
+# Importância de features para Random Forest
+st.subheader("Importância das Features - Random Forest")
+feat_imp = pd.Series(models['Random Forest'].feature_importances_, index=X.columns)
 feat_imp = feat_imp.sort_values(ascending=False)
-plt.figure(figsize=(8,6))
-sns.barplot(x=feat_imp.values, y=feat_imp.index)
-plt.title('Importância das features — Random Forest')
-st.pyplot(plt.gcf())
-plt.clf()
 
-"""## 8. Validação cruzada e ajuste de hiperparâmetros (exemplo)"""
+fig_feat, ax_feat = plt.subplots()
+sns.barplot(x=feat_imp.values, y=feat_imp.index, ax=ax_feat)
+ax_feat.set_title("Top Features por importância (Random Forest)")
+st.pyplot(fig_feat)
 
-# Validação cruzada com Random Forest (score médio)
+# Validação cruzada e otimização
+st.subheader("Validação Cruzada e Otimização")
+
+rf = models['Random Forest']
 cv_scores = cross_val_score(rf, X_scaled, y, cv=5, scoring='roc_auc')
-st.write('Random Forest CV AUC (5-fold):', cv_scores.mean())
+st.write(f"Random Forest CV AUC (5-fold): {cv_scores.mean():.3f}")
 
-# Exemplo de GridSearch para Random Forest (rápido)
-param_grid = {'n_estimators': [50,100], 'max_depth':[None,5,10]}
+param_grid = {'n_estimators': [50, 100], 'max_depth': [None, 5, 10]}
 gs = GridSearchCV(RandomForestClassifier(random_state=42), param_grid, cv=3, scoring='roc_auc')
 gs.fit(X_train, y_train)
-st.write('Melhores parâmetros RF:', gs.best_params_)
+st.write(f"Melhores parâmetros RF: {gs.best_params_}")
+
 best_rf = gs.best_estimator_
 y_pred_best_rf = best_rf.predict(X_test)
-st.write('Acurácia do RF ajustado:', accuracy_score(y_test, y_pred_best_rf))
-
-"""## 9. Melhorias: Escolhendo o melhor modelo"""
+st.write(f"Acurácia do RF ajustado: {accuracy_score(y_test, y_pred_best_rf):.3f}")
 
 import joblib
 joblib.dump(best_rf, 'best_random_forest_model.joblib')
-st.write('Modelo salvo: best_random_forest_model.joblib')
+st.write("Modelo salvo: best_random_forest_model.joblib")
