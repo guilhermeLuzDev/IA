@@ -1,4 +1,3 @@
-import io
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -11,6 +10,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 import warnings
+import joblib
 
 warnings.filterwarnings('ignore')
 plt.style.use('seaborn-v0_8-darkgrid')
@@ -18,39 +18,43 @@ plt.style.use('seaborn-v0_8-darkgrid')
 st.set_page_config(page_title="Previsão Insuficiência Cardíaca", layout="wide")
 
 st.title("Previsão de Óbito por Insuficiência Cardíaca")
-st.markdown("Projeto completo com análise, modelagem e avaliação de algoritmos ML.")
+st.markdown("""
+Projeto completo com análise, modelagem e avaliação de algoritmos ML.
 
-with st.sidebar:
-    st.header("Sobre o Dataset")
-    st.markdown("""
-    - 299 registros clínicos  
-    - 12 variáveis clínicas + alvo  
-    - Objetivo: prever óbito (`DEATH_EVENT`)  
-    """)
-    if st.button("Mostrar informações do dataframe"):
-        buffer = io.StringIO()
-        df.info(buf=buffer)
-        info_str = buffer.getvalue()
-        st.text(info_str)
+**Dataset:** 299 registros clínicos — 12 variáveis clínicas + variável alvo (`DEATH_EVENT`)
+""")
 
+# Carregamento dos dados
 df = pd.read_csv('heart_failure_clinical_records_dataset.csv')
-st.subheader("Visualização dos Dados")
+st.subheader("Visualização inicial dos Dados")
 st.write(f"Dimensão do dataset: {df.shape[0]} registros e {df.shape[1]} colunas")
 st.dataframe(df.head(), height=250)
 
+st.subheader("Informações do dataframe")
+
+st.markdown("**Resumo estatístico:**")
+st.dataframe(df.describe().T)
+
+st.markdown("**Valores nulos por coluna:**")
+st.dataframe(df.isnull().sum().reset_index().rename(columns={0: "Nulos", "index": "Coluna"}))
+
+st.markdown("**Tipos de dados por coluna:**")
+st.dataframe(df.dtypes.reset_index().rename(columns={0: "Tipo", "index": "Coluna"}))
+
+# Análise exploratória
 st.subheader("Análise Exploratória")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("**Distribuição de DEATH_EVENT**")
+    st.markdown("**Distribuição de óbitos (DEATH_EVENT)**")
     fig1, ax1 = plt.subplots(figsize=(6,4))
     sns.countplot(x='DEATH_EVENT', data=df, ax=ax1)
-    ax1.set_title('Distribuição de DEATH_EVENT (0 = vivo, 1 = óbito)')
+    ax1.set_title('Distribuição DEATH_EVENT (0 = vivo, 1 = óbito)')
     st.pyplot(fig1)
 
     st.markdown("**Valores Nulos por Coluna**")
-    st.write(df.isnull().sum())
+    st.dataframe(df.isnull().sum().reset_index().rename(columns={0: "Nulos", "index": "Coluna"}))
 
 with col2:
     st.markdown("**Mapa de Correlação**")
@@ -59,10 +63,10 @@ with col2:
     ax2.set_title('Correlação entre Variáveis')
     st.pyplot(fig2)
 
+# Pré-processamento
 st.subheader("Pré-processamento")
 X = df.drop('DEATH_EVENT', axis=1)
 y = df['DEATH_EVENT']
-
 st.write(f'Conjunto de Features: {X.shape}')
 st.write(f'Conjunto Target: {y.shape}')
 
@@ -71,10 +75,10 @@ X_scaled = scaler.fit_transform(X)
 
 X_train, X_test, y_train, y_test = train_test_split(
     X_scaled, y, test_size=0.2, random_state=42, stratify=y)
+st.write(f'Modelo treinado com: Dados de treino {X_train.shape}, dados de teste {X_test.shape}')
 
-st.write(f'Dados de treino: {X_train.shape} | Dados de teste: {X_test.shape}')
-
-st.subheader("Treinamento e Resultados")
+# Treinamento dos modelos
+st.subheader("Treinamento e Resultados dos Modelos")
 
 models = {
     'Logistic Regression': LogisticRegression(max_iter=1000),
@@ -88,7 +92,7 @@ for name, model in models.items():
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     acc = accuracy_score(y_test, y_pred)
-    results[name] = {'accuracy': acc}
+    results[name] = {'Acurácia': acc}
 
     with st.expander(f"{name} - Relatório de Classificação"):
         st.text(classification_report(y_test, y_pred))
@@ -101,7 +105,7 @@ for name, model in models.items():
         st.pyplot(fig_cm)
 
 acc_df = pd.DataFrame(results).T
-st.write("Acurácia dos Modelos:")
+st.write("**Acurácia dos Modelos:**")
 st.dataframe(acc_df)
 
 st.subheader("Curvas ROC")
@@ -134,7 +138,6 @@ ax_feat.set_title("Top Features por importância (Random Forest)")
 st.pyplot(fig_feat)
 
 st.subheader("Validação Cruzada e Otimização")
-
 rf = models['Random Forest']
 cv_scores = cross_val_score(rf, X_scaled, y, cv=5, scoring='roc_auc')
 st.write(f"Random Forest CV AUC (5-fold): {cv_scores.mean():.3f}")
@@ -148,6 +151,5 @@ best_rf = gs.best_estimator_
 y_pred_best_rf = best_rf.predict(X_test)
 st.write(f"Acurácia do RF ajustado: {accuracy_score(y_test, y_pred_best_rf):.3f}")
 
-import joblib
 joblib.dump(best_rf, 'best_random_forest_model.joblib')
 st.write("Modelo salvo: best_random_forest_model.joblib")
