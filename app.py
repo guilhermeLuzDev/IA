@@ -232,7 +232,7 @@ with tab_eval:
             st.pyplot(fig, clear_figure=True)
             
     st.divider()
-    st.subheader("Validação cruzada e GridSearch (como no notebook)")
+    st.subheader("Validação cruzada e GridSearch")
     X_scaled_full = StandardScaler().fit_transform(df.drop('DEATH_EVENT', axis=1))
     cv_scores = cross_val_score(rf, X_scaled_full, y, cv=5, scoring='roc_auc')
     st.caption(f"Random Forest CV AUC (5-fold): {float(cv_scores.mean()):.3f}")
