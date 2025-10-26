@@ -112,31 +112,36 @@ with tab_eda:
         st.pyplot(fig, clear_figure=True)
     with c4:
         st.subheader("Mapa de correlação")
-        # matriz de correlação apenas com numéricas
+        import numpy as np
+
         corr = df.corr(numeric_only=True)
-    
-        # máscara para esconder o triângulo superior (evita duplicidade visual)
         mask = np.triu(np.ones_like(corr, dtype=bool))
-    
-        # figura mais compacta
-        fig, ax = plt.subplots(figsize=(5.2, 3.8), dpi=120)
-    
+        tick_labels = [c.replace("_", "\n") for c in corr.columns]
+        fig, ax = plt.subplots(figsize=(6.2, 4.0), dpi=120, constrained_layout=True)
+        
         sns.heatmap(
             corr,
-            mask=mask,                  # mostra só metade
-            annot=True, fmt=".2f",
-            annot_kws={"size": 8},      # anotações menores
+            mask=mask,                      
             cmap="RdBu_r",
-            vmin=-1, vmax=1, center=0,  # paleta divergente centrada em 0
-            square=True,
+            vmin=-1, vmax=1, center=0,      
+            annot=True, fmt=".2f",
+            annot_kws={"size": 7},          
             linewidths=.5,
-            cbar_kws={"shrink": .6, "pad": .02}  # barra menor e mais próxima
+            square=False,                   
+            xticklabels=tick_labels,
+            yticklabels=tick_labels,
+            cbar_kws={"shrink": .65, "pad": .02}
         )
     
-        ax.set_title("Correlação", fontsize=12)
-        ax.tick_params(axis="x", rotation=45)
-        ax.tick_params(axis="y", rotation=0)
-        plt.tight_layout()
+        ax.set_title("Correlação", fontsize=12, pad=8)
+        ax.tick_params(axis="x", labelsize=8)
+        ax.tick_params(axis="y", labelsize=8)
+        for t in ax.get_xticklabels():
+            t.set_rotation(0)
+            t.set_ha("center")
+        for t in ax.get_yticklabels():
+            t.set_rotation(0)
+    
         st.pyplot(fig, clear_figure=True)
 
 
