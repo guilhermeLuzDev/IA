@@ -24,7 +24,6 @@ plt.style.use('seaborn-v0_8-darkgrid')
 
 # Configuração da página
 st.set_page_config(page_title="Heart Failure - ML", layout="wide")
-st.title("Previsão de Óbito por Insuficiência Cardíaca (Heart Failure)")
 
 # Informações do projeto (original do notebook)
 about_md = """
