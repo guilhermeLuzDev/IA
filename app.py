@@ -196,7 +196,7 @@ with tab_eval:
     results_df = pd.DataFrame(results).T.sort_values('roc_auc', ascending=False)
     st.dataframe(results_df.style.format({c: "{:.3f}" for c in results_df.columns}), use_container_width=True)
 
-    st.subheader("Curvas ROC (compactas)")
+    st.subheader("Curvas ROC")
     # ROC menor e em duas colunas para organização
     cols = st.columns(2, gap="large")
     model_list = list(models.items())
