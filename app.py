@@ -111,33 +111,33 @@ with tab_eda:
         ax.set_title('DEATH_EVENT (0=vivo, 1=óbito)')
         st.pyplot(fig, clear_figure=True)
     with c4:
-    st.subheader("Mapa de correlação")
-    # matriz de correlação apenas com numéricas
-    corr = df.corr(numeric_only=True)
-
-    # máscara para esconder o triângulo superior (evita duplicidade visual)
-    mask = np.triu(np.ones_like(corr, dtype=bool))
-
-    # figura mais compacta
-    fig, ax = plt.subplots(figsize=(5.2, 3.8), dpi=120)
-
-    sns.heatmap(
-        corr,
-        mask=mask,                  # mostra só metade
-        annot=True, fmt=".2f",
-        annot_kws={"size": 8},      # anotações menores
-        cmap="RdBu_r",
-        vmin=-1, vmax=1, center=0,  # paleta divergente centrada em 0
-        square=True,
-        linewidths=.5,
-        cbar_kws={"shrink": .6, "pad": .02}  # barra menor e mais próxima
-    )
-
-    ax.set_title("Correlação", fontsize=12)
-    ax.tick_params(axis="x", rotation=45)
-    ax.tick_params(axis="y", rotation=0)
-    plt.tight_layout()
-    st.pyplot(fig, clear_figure=True)
+        st.subheader("Mapa de correlação")
+        # matriz de correlação apenas com numéricas
+        corr = df.corr(numeric_only=True)
+    
+        # máscara para esconder o triângulo superior (evita duplicidade visual)
+        mask = np.triu(np.ones_like(corr, dtype=bool))
+    
+        # figura mais compacta
+        fig, ax = plt.subplots(figsize=(5.2, 3.8), dpi=120)
+    
+        sns.heatmap(
+            corr,
+            mask=mask,                  # mostra só metade
+            annot=True, fmt=".2f",
+            annot_kws={"size": 8},      # anotações menores
+            cmap="RdBu_r",
+            vmin=-1, vmax=1, center=0,  # paleta divergente centrada em 0
+            square=True,
+            linewidths=.5,
+            cbar_kws={"shrink": .6, "pad": .02}  # barra menor e mais próxima
+        )
+    
+        ax.set_title("Correlação", fontsize=12)
+        ax.tick_params(axis="x", rotation=45)
+        ax.tick_params(axis="y", rotation=0)
+        plt.tight_layout()
+        st.pyplot(fig, clear_figure=True)
 
 
 with tab_model:
