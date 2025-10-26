@@ -242,7 +242,7 @@ with tab_eval:
             ax.legend(frameon=False, fontsize=8)
             plt.tight_layout()
             st.pyplot(fig, clear_figure=True)
-a
+            
     st.divider()
     st.subheader("Validação cruzada e GridSearch (como no notebook)")
     X_scaled_full = StandardScaler().fit_transform(df.drop('DEATH_EVENT', axis=1))
