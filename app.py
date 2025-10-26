@@ -112,37 +112,20 @@ with tab_eda:
         st.pyplot(fig, clear_figure=True)
     with c4:
         st.subheader("Mapa de correlação")
-        import numpy as np
-
-        corr = df.corr(numeric_only=True)
-        mask = np.triu(np.ones_like(corr, dtype=bool))
-        tick_labels = [c.replace("_", "\n") for c in corr.columns]
-        fig, ax = plt.subplots(figsize=(6.2, 4.0), dpi=120, constrained_layout=True)
-        
+        # matriz de correlação com todas as colunas numéricas, como no notebook
+        corr = df.corr(numeric_only=True)  # idem ao comportamento clássico do pandas
+    
+        # figura ampla, matriz completa, anotada e com 'coolwarm' (sem máscara)
+        fig, ax = plt.subplots(figsize=(12, 10))  # tamanho amplo como no script original
         sns.heatmap(
             corr,
-            mask=mask,                      
-            cmap="RdBu_r",
-            vmin=-1, vmax=1, center=0,      
             annot=True, fmt=".2f",
-            annot_kws={"size": 7},          
-            linewidths=.5,
-            square=False,                   
-            xticklabels=tick_labels,
-            yticklabels=tick_labels,
-            cbar_kws={"shrink": .65, "pad": .02}
+            cmap="coolwarm",
+            ax=ax
         )
-    
-        ax.set_title("Correlação", fontsize=12, pad=8)
-        ax.tick_params(axis="x", labelsize=8)
-        ax.tick_params(axis="y", labelsize=8)
-        for t in ax.get_xticklabels():
-            t.set_rotation(0)
-            t.set_ha("center")
-        for t in ax.get_yticklabels():
-            t.set_rotation(0)
-    
+        ax.set_title("Mapa de Correlação")
         st.pyplot(fig, clear_figure=True)
+
 
 
 with tab_model:
